@@ -1,0 +1,31 @@
+# === ENVIRONNEMENT ===
+env/
+.venv/
+__pycache__/
+*.py[cod]
+*.so
+
+# === FICHIERS SYSTÈME ===
+.DS_Store
+.vscode/
+.idea/
+
+# === FICHIERS DE LOGICIEL ===
+*.log
+*.sqlite3
+*.db
+
+# === MODELE & EXPORTS ===
+model/*.joblib
+model/recommandations_du_jour.csv
+model/places.pkl
+model/metrics.txt
+
+# === DONNÉES ===
+data/*.csv
+!data/dataset_sorties_500k.csv   # <-- on garde le CSV principal
+data/*.ipynb
+
+# === AUTRES ===
+*.bak
+*.swp

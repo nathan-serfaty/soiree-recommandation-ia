@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Soirée Recommandation</title>
+</head>
+<body>
+  <h1>✨ Quelle sortie pour ce soir ?</h1>
+
+  <form id="reco-form">
+    <label>Âge: <input type="number" name="age" required /></label><br>
+    <label>Genre:
+      <select name="genre">
+        <option>homme</option>
+        <option>femme</option>
+        <option>non-binaire</option>
+      </select>
+    </label><br>
+    <label>Ville:
+      <select name="ville">
+        <option>Paris</option>
+      </select>
+    </label><br>
+    <label>Préférence:
+      <select name="preference">
+        <option>cocktails</option>
+        <option>dîner romantique</option>
+        <option>fête intense</option>
+        <option>ambiance chill</option>
+        <option>vue panoramique</option>
+        <option>soirée entre amis</option>
+      </select>
+    </label><br><br>
+
+    <button type="submit">Obtenir une recommandation</button>
+  </form>
+
+  <div id="result" style="margin-top:20px;"></div>
+
+  <button id="download-btn" style="display:none; margin-top:10px;">📥 Télécharger toutes les recommandations</button>
+
+  <script>
+    document.getElementById('reco-form').onsubmit = async function(e) {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const data = Object.fromEntries(form.entries());
+
+      const res = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+
+      if (result.error) {
+        document.getElementById('result').innerHTML = `<p style='color:red;'>Erreur : ${result.error}</p>`;
+        document.getElementById('download-btn').style.display = 'none';
+        return;
+      }
+
+      let html = `<h2>🎯 Type recommandé : ${result.type}</h2>`;
+      html += "<ul>";
+      for (const lieu of result.lieux) {
+        html += `<li><strong>${lieu.nom_lieu}</strong> – Note : ${lieu.note_moyenne}</li>`;
+      }
+      html += "</ul>";
+
+      document.getElementById('result').innerHTML = html;
+      document.getElementById('download-btn').style.display = 'inline-block';
+    };
+
+    document.getElementById('download-btn').onclick = async function () {
+      try {
+        const res = await fetch('/download');
+        if (res.status === 404) {
+          alert("Aucune recommandation disponible pour le moment.");
+          return;
+        }
+        window.location.href = '/download';
+      } catch (err) {
+        alert("Erreur lors du téléchargement.");
+      }
+    };
+  </script>
+</body>
+</html>
