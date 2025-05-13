@@ -7,6 +7,11 @@ def preprocess_data(df):
     target = "type"
 
     df = df[features + [target]].dropna()
+
+    # ✅ Ajoute cette ligne
+    for col in ["genre", "ville", "preference", "type"]:
+        df[col] = df[col].str.lower()
+
     encoders = {}
     for col in features:
         le = LabelEncoder()

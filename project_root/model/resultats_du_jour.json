@@ -1,0 +1,26 @@
+{
+  "type": "café",
+  "model": "xgboost",
+  "lieux": [
+    {
+      "nom_lieu": "Faivre SA Café",
+      "note_moyenne": 5.0
+    },
+    {
+      "nom_lieu": "Delorme Café",
+      "note_moyenne": 5.0
+    },
+    {
+      "nom_lieu": "Moulin Dias et Fils Café",
+      "note_moyenne": 5.0
+    },
+    {
+      "nom_lieu": "Ledoux Café",
+      "note_moyenne": 5.0
+    },
+    {
+      "nom_lieu": "Sanchez Café",
+      "note_moyenne": 5.0
+    }
+  ]
+}

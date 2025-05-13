@@ -1,87 +1,257 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Soirée Recommandation</title>
+  <meta charset="UTF-8" />
+  <title>🎯 Recommandation de Lieux</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2em;
+      max-width: 600px;
+      margin: auto;
+      background: #f9f9f9;
+    }
+    h1, h2 {
+      color: #333;
+      text-align: center;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      background: #fff;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      font-weight: bold;
+    }
+    input, select, button {
+      padding: 0.5em;
+      font-size: 1em;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #results, #similar-results {
+      margin-top: 2em;
+      background: #fff;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 1em;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+  </style>
 </head>
 <body>
-  <h1>✨ Quelle sortie pour ce soir ?</h1>
 
-  <form id="reco-form">
-    <label>Âge: <input type="number" name="age" required /></label><br>
-    <label>Genre:
-      <select name="genre">
-        <option>homme</option>
-        <option>femme</option>
-        <option>non-binaire</option>
-      </select>
-    </label><br>
-    <label>Ville:
-      <select name="ville">
-        <option>Paris</option>
-      </select>
-    </label><br>
-    <label>Préférence:
-      <select name="preference">
-        <option>cocktails</option>
-        <option>dîner romantique</option>
-        <option>fête intense</option>
-        <option>ambiance chill</option>
-        <option>vue panoramique</option>
-        <option>soirée entre amis</option>
-      </select>
-    </label><br><br>
+<h1>🎯 Recommandation de Lieux</h1>
 
-    <button type="submit">Obtenir une recommandation</button>
-  </form>
+<h2>🔹 Recommandation Générale</h2>
 
-  <div id="result" style="margin-top:20px;"></div>
+<form id="reco-form">
+  <label>
+    Âge :
+    <input type="number" name="age" required />
+  </label>
 
-  <button id="download-btn" style="display:none; margin-top:10px;">📥 Télécharger toutes les recommandations</button>
+  <label>
+    Genre :
+    <select name="genre" id="genre-select"></select>
+  </label>
 
-  <script>
-    document.getElementById('reco-form').onsubmit = async function(e) {
-      e.preventDefault();
-      const form = new FormData(e.target);
-      const data = Object.fromEntries(form.entries());
+  <label>
+    Ville :
+    <select name="ville" id="ville-select"></select>
+  </label>
 
-      const res = await fetch('/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
+  <label>
+    Préférence :
+    <select name="preference" id="preference-select"></select>
+  </label>
 
-      const result = await res.json();
+  <label>
+    Choix du modèle :
+    <select name="model">
+      <option value="xgboost">XGBoost</option>
+      <option value="random_forest">Random Forest</option>
+    </select>
+  </label>
 
-      if (result.error) {
-        document.getElementById('result').innerHTML = `<p style='color:red;'>Erreur : ${result.error}</p>`;
-        document.getElementById('download-btn').style.display = 'none';
-        return;
-      }
+  <button type="submit">Obtenir des recommandations</button>
+</form>
 
-      let html = `<h2>🎯 Type recommandé : ${result.type}</h2>`;
-      html += "<ul>";
-      for (const lieu of result.lieux) {
-        html += `<li><strong>${lieu.nom_lieu}</strong> – Note : ${lieu.note_moyenne}</li>`;
-      }
-      html += "</ul>";
+<div id="results"></div>
 
-      document.getElementById('result').innerHTML = html;
-      document.getElementById('download-btn').style.display = 'inline-block';
-    };
+<hr style="margin: 3em 0;">
 
-    document.getElementById('download-btn').onclick = async function () {
-      try {
-        const res = await fetch('/download');
-        if (res.status === 404) {
-          alert("Aucune recommandation disponible pour le moment.");
-          return;
-        }
-        window.location.href = '/download';
-      } catch (err) {
-        alert("Erreur lors du téléchargement.");
-      }
-    };
-  </script>
+<h2>🎯 Recommandation Précise (Matching personnalisé)</h2>
+
+<form id="similar-form">
+  <label>
+    Âge :
+    <input type="number" name="age" required />
+  </label>
+
+  <label>
+    Genre :
+    <select name="genre" id="sim-genre">
+      <option value="homme">Homme</option>
+      <option value="femme">Femme</option>
+      <option value="non-binaire">Non-binaire</option>
+    </select>
+  </label>
+
+  <label>
+    Ville :
+    <select name="ville" id="sim-ville">
+      <option value="paris">Paris</option>
+      <option value="lyon">Lyon</option>
+      <option value="bordeaux">Bordeaux</option>
+      <option value="marseille">Marseille</option>
+      <option value="nice">Nice</option>
+      <option value="toulouse">Toulouse</option>
+      <option value="strasbourg">Strasbourg</option>
+      <option value="nantes">Nantes</option>
+    </select>
+  </label>
+
+  <label>
+    Moment de la journée :
+    <select name="moment">
+      <option value="soir">Soir</option>
+      <option value="nuit">Nuit</option>
+      <option value="après-midi">Après-midi</option>
+    </select>
+  </label>
+
+  <label>
+    Ambiance souhaitée :
+    <select name="ambiance">
+      <option value="chill">Chill</option>
+      <option value="romantique">Romantique</option>
+      <option value="festive">Festive</option>
+    </select>
+  </label>
+
+  <label>
+    Budget :
+    <select name="budget">
+      <option value="petit">Petit</option>
+      <option value="moyen">Moyen</option>
+      <option value="élevé">Élevé</option>
+    </select>
+  </label>
+
+  <label>
+    Sort avec :
+    <select name="avec">
+      <option value="amis">Amis</option>
+      <option value="amoureux">Amoureux</option>
+      <option value="famille">Famille</option>
+      <option value="solo">Solo</option>
+    </select>
+  </label>
+
+  <button type="submit">Recommandation précise</button>
+</form>
+
+<div id="similar-results"></div>
+
+<script>
+// Chargement dynamique des labels pour la reco générale
+async function loadLabels() {
+  const res = await fetch("/labels");
+  const data = await res.json();
+
+  const populate = (id, list) => {
+    const select = document.getElementById(id);
+    select.innerHTML = list.map(opt => `<option value="${opt}">${opt}</option>`).join("");
+  };
+
+  populate("genre-select", data.genres);
+  populate("ville-select", data.villes);
+  populate("preference-select", data.preferences);
+}
+
+loadLabels();
+
+// Formulaire général
+document.getElementById('reco-form').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = new FormData(e.target);
+  const data = Object.fromEntries(form.entries());
+
+  const res = await fetch('/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  const json = await res.json();
+  const resultsDiv = document.getElementById('results');
+
+  if (json.error) {
+    resultsDiv.innerHTML = `<p style="color:red;"><strong>Erreur :</strong> ${json.error}</p>`;
+  } else {
+    const lieuxHTML = json.lieux.map(
+      lieu => `<li>${lieu.nom_lieu} (Note : ${lieu.note_moyenne})</li>`
+    ).join("");
+
+    resultsDiv.innerHTML = `
+      <h2>✅ Modèle : ${json.model}</h2>
+      <h3>Type de lieu recommandé : ${json.type}</h3>
+      <ul>${lieuxHTML}</ul>
+      <h4>Métriques du modèle :</h4>
+      <pre>${json.metrics}</pre>
+      <a href="/download" download>📥 Télécharger toutes les recommandations (.csv)</a>
+    `;
+  }
+};
+
+// Formulaire précis (matching vectoriel)
+document.getElementById('similar-form').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = new FormData(e.target);
+  const data = Object.fromEntries(form.entries());
+
+  const res = await fetch('/similar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  const json = await res.json();
+  const resultDiv = document.getElementById('similar-results');
+
+  if (json.error) {
+    resultDiv.innerHTML = `<p style="color:red;"><strong>Erreur :</strong> ${json.error}</p>`;
+  } else {
+    const lieuxHTML = json.lieux.map(
+      lieu => `<li>${lieu.nom_lieu} — ${lieu.type} (${lieu.note_moyenne})</li>`
+    ).join("");
+    resultDiv.innerHTML = `
+      <h3>Lieux les plus proches de ton profil :</h3>
+      <ul>${lieuxHTML}</ul>
+    `;
+  }
+};
+</script>
+
 </body>
 </html>

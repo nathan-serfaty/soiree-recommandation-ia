@@ -1,73 +1,123 @@
 # 🎉 Soirée Recommandation — Application IA
 
+Bienvenue dans cette application de **recommandation intelligente de lieux de sortie** (bars, restaurants, boîtes de nuit, etc.), basée sur un **modèle de machine learning** et un système de **matching vectoriel** personnalisé.
+
+---
+
 ## 📌 Objectif du projet
 
-Ce projet vise à recommander dynamiquement des lieux de sortie (bar, restaurant, boîte de nuit, etc.) en fonction du profil de l'utilisateur (âge, genre, ville, préférence) à l'aide d'un modèle de machine learning.
+Permettre à un utilisateur d’obtenir, via un formulaire web simple :
+- une **recommandation générale** (via modèle ML : XGBoost, RandomForest…)
+- une **recommandation précise et personnalisée** (via recherche par similarité)
 
-L'utilisateur remplit un court formulaire et reçoit immédiatement une suggestion personnalisée, accompagnée d'une liste des lieux les mieux notés correspondant au type prédit.
-
----
-
-## 🧾 1. Données utilisées (8 points)
-
-- **Type de données :**  
-  Données synthétiques générées à l’aide de la librairie [Faker](https://faker.readthedocs.io/en/master/), enrichies par une logique conditionnelle pour créer un lien réaliste entre préférences utilisateur et type de lieu recommandé.
-
-- **Colonnes :**  
-  `age`, `genre`, `ville`, `preference` → `type`, `nom_lieu`, `note_moyenne`
-
-- **Source :**  
-  Données simulées (aucune donnée personnelle réelle).
-
-- **Prétraitement :**  
-  Les variables catégorielles (`genre`, `ville`, `preference`, `type`) sont encodées avec `LabelEncoder`, sauvegardées via `joblib`.
-
-- **Utilité :**  
-  Ces données permettent d'entraîner un modèle de classification pour **prédire un type de lieu pertinent** à recommander selon le profil de l'utilisateur.
+Chaque prédiction renvoie :
+- Le type de lieu prédit (ex: `bar`, `restaurant`, etc.)
+- Les **5 meilleurs lieux notés** dans ce type
+- Les **métriques du modèle**
+- Un lien pour **télécharger toutes les recommandations** (.csv)
+- Et un **résumé JSON complet** accessible à `/download`
 
 ---
 
-## 🤖 2. Méthodes de machine learning utilisées (6 points)
+## 🧾 1. Données utilisées
 
-- **Modèle principal :**  
-  `XGBClassifier` (XGBoost) — Classificateur puissant et robuste pour les tâches multi-classes.
-
-- **Pourquoi ce choix ?**
-  - Très performant même sur données simulées
-  - Gère bien les colonnes numériques encodées
-  - Facile à intégrer dans un pipeline scikit-learn
-  - Compatible avec analyse de performance (`metrics.txt` généré)
-
-- **Méthodologie :**
-  - Séparation des features (`X`) et de la cible (`y`)
-  - Entraînement avec `model.fit(X, y)`
-  - Sauvegarde du modèle dans `model/model.joblib`
+- **Fichier :** `data/dataset_sorties_500k.csv`
+- **Colonnes :**
+  - `age`, `genre`, `ville`, `preference`
+  - → `type` (cible), `nom_lieu`, `note_moyenne`
+- **Prétraitement :**
+  - Encodage avec `LabelEncoder`
+  - Sauvegardes des encodeurs dans `model/`
+- **Ajouts pour similarité :**
+  - `moment`, `ambiance`, `budget`, `avec` (ajoutés aléatoirement pour enrichir le matching)
+- **Stockage vectoriel :**
+  - Vecteurs encodés sauvegardés avec `joblib` pour recherche vectorielle (cosine similarity)
 
 ---
 
-## ⚙️ 3. Lancer le projet en local
+## 🤖 2. Modèles utilisés
 
-### Prérequis
+### 🔹 Classification (Recommandation Générale)
 
-- Python 3.8+ recommandé
-- `pip`, `virtualenv` ou `venv`
+- **Modèles disponibles :** `XGBoost`, `RandomForest`
+- **Fonctionnement :**
+  - Prédiction du `type` de lieu à recommander
+  - Renvoi des lieux correspondants triés par `note_moyenne`
+  - Sauvegarde CSV dans `static/recommandations_du_jour.csv`
+  - Sauvegarde JSON complète dans `model/resultats_du_jour.json`
 
-### Étapes
+### 🔹 Similarité (Recommandation Personnalisée)
+
+- **Méthode :** `cosine_similarity` sur vecteurs encodés (`OneHotEncoder`)
+- **Objectif :** proposer les lieux les plus proches du **profil utilisateur enrichi**
+- **Colonnes utilisées :**
+  - `genre`, `ville`, `moment`, `ambiance`, `budget`, `avec`
+
+---
+
+## 🖥️ 3. Interface Web
+
+- **Technologie :** Flask + HTML (template `index.html`)
+- Deux formulaires :
+  - 🔵 Recommandation Générale (modèle ML)
+  - 🟣 Recommandation Précise (matching vectoriel)
+- Résultat affiché dynamiquement dans l’interface
+- 📥 Lien direct vers les fichiers recommandés
+- 🔄 Résultats accessibles via :
+  - `/predict` (POST)
+  - `/similar` (POST)
+  - `/download` (GET) → retourne un JSON :  
+    ```json
+    {
+      "type": "bar",
+      "model": "xgboost",
+      "lieux": [...],
+      "download_url": "/static/recommandations_du_jour.csv"
+    }
+    ```
+
+---
+
+## ⚙️ 4. Lancer le projet localement
+
+### 🔧 Prérequis
+
+- Python 3.8+
+- pip
+
+### 📦 Installation
 
 ```bash
-# 1. Cloner le repo
+# 1. Cloner le projet
 git clone <URL_DU_REPO>
 cd soirée_ml/project_root
 
 # 2. Créer un environnement virtuel
-python3 -m venv env
-source env/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 
 # 3. Installer les dépendances
 pip install -r requirements.txt
-
-# 4. Entraîner le modèle (optionnel si déjà présent)
+# (optionnel) Entraîner le modèle ML
 python train_model.py
 
-# 5. Lancer l'application web
+# (optionnel) Entraîner l’encodage pour la similarité
+python train_similarity.py
+
+# Lancer le serveur Flask
 python -m app.main
+project_root/
+├── app/
+│   ├── main.py               # Serveur Flask
+│   ├── model.py              # Prédiction générale (ML)
+│   ├── similarity.py         # Matching vectoriel
+│   ├── templates/
+│   │   └── index.html        # Interface web
+├── data/
+│   └── dataset_sorties_500k.csv
+├── model/                    # Modèles, encoders, json exportés
+│   ├── model.joblib
+│   ├── metrics.json
+│   ├── resultats_du_jour.json
+├── static/                  # Fichiers téléchargeables (.csv)
+│   └── recommandations_du_jour.csv
