@@ -106,8 +106,8 @@ python train_similarity.py
 
 # Lancer le serveur Flask
 python -m app.main
-```bash
 
+---
 ## ⚙️ 5. Structure du projet:
 project_root/
 ├── app/
