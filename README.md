@@ -98,10 +98,10 @@ source venv/bin/activate
 
 # 3. Installer les dépendances
 pip install -r requirements.txt
-# (optionnel) Entraîner le modèle ML
+# (optionnel car déja pré train dans le repo) Entraîner le modèle ML
 python train_model.py
 
-# (optionnel) Entraîner l’encodage pour la similarité
+# (optionnel car déja pré train dans le repo) Entraîner l’encodage pour la similarité
 python train_similarity.py
 
 # Lancer le serveur Flask
