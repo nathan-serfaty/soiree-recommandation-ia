@@ -85,12 +85,10 @@ Chaque prédiction renvoie :
 - Python 3.8+
 - pip
 
-### 📦 Installation
-
-```bash
+📦 Installation
 # 1. Cloner le projet
 git clone <URL_DU_REPO>
-cd soirée_ml/project_root
+cd soiree_ml/project_root
 
 # 2. Créer un environnement virtuel
 python3 -m venv venv
@@ -98,7 +96,8 @@ source venv/bin/activate
 
 # 3. Installer les dépendances
 pip install -r requirements.txt
-# (optionnel) Entraîner le modèle ML
+
+# (optionnel) Entraîner le modèle de machine learning
 python train_model.py
 
 # (optionnel) Entraîner l’encodage pour la similarité
@@ -108,19 +107,30 @@ python train_similarity.py
 python -m app.main
 
 
-## 5/ Structure du projet:
+📁 Structure du projet
+L’arborescence du projet est organisée comme suit :
+
 project_root/
-├── app/
-│   ├── main.py               # Serveur Flask
-│   ├── model.py              # Prédiction générale (ML)
-│   ├── similarity.py         # Matching vectoriel
-│   ├── templates/
-│   │   └── index.html        # Interface web
-├── data/
-│   └── dataset_sorties_500k.csv
-├── model/                    # Modèles, encoders, json exportés
-│   ├── model.joblib
-│   ├── metrics.json
-│   ├── resultats_du_jour.json
-├── static/                  # Fichiers téléchargeables (.csv)
-│   └── recommandations_du_jour.csv
+├── app/                            # Code principal de l'application Flask
+│   ├── main.py                     # Script principal (serveur Flask)
+│   ├── model.py                    # Prédictions générales (ML)
+│   ├── similarity.py               # Algorithme de similarité vectorielle
+│   └── templates/
+│       └── index.html              # Interface utilisateur (HTML)
+│
+├── data/                           # Données sources
+│   └── dataset_sorties_500k.csv    # Dataset principal
+│
+├── model/                          # Fichiers liés au modèle ML
+│   ├── model.joblib                # Modèle entraîné
+│   ├── metrics.json                # Métriques de performance
+│   ├── resultats_du_jour.json      # Résultats prédits
+│
+├── static/                         # Fichiers statiques générés
+│   └── recommandations_du_jour.csv# Fichier de recommandations à télécharger
+│
+├── requirements.txt                # Dépendances Python
+├── train_model.py                  # Script d'entraînement du modèle
+├── train_similarity.py             # Script de préparation pour la similarité
+└── README.md                       # Documentation du projet
+
